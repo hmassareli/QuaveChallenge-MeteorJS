@@ -1,6 +1,6 @@
+import { useTracker } from 'meteor/react-meteor-data';
 import React, { useEffect, useState } from 'react';
 import { People } from '../../collections/people';
-import { useTracker } from 'meteor/react-meteor-data';
 
 export default function EventCounters({ selectedCommunity, buttonClicked }) {
   function getPeoplePresent(person) {
@@ -26,8 +26,6 @@ export default function EventCounters({ selectedCommunity, buttonClicked }) {
     return { people };
   }, [selectedCommunity, buttonClicked]);
 
-
-
   /*useEffect(()=>{
     
     setCountPeoplePresent(people.filter(getPeoplePresent).length) 
@@ -42,37 +40,24 @@ export default function EventCounters({ selectedCommunity, buttonClicked }) {
       return person.checkin && !person.checkout;
     }
     const peoplePresent = people.filter(getPeoplePresent); // Returns only the people who are in the event now
-    setCountPeoplePresent(peoplePresent.length) 
+    setCountPeoplePresent(peoplePresent.length);
 
-    console.log('peoplePresent',peoplePresent.length);
     //to find
-    
-      peoplePresent.forEach(function(person) {
-        if (peopleByCompany[person.companyName] == undefined) {
-          peopleByCompany[person.companyName] = 0;
-        }
-        peopleByCompany[person.companyName]++;
-      });
 
-    const propertyNames = Object.getOwnPropertyNames(peopleByCompany);
-    console.log('peopleByCompany',peopleByCompany);
+    const peopleByCompanyFunctional = peoplePresent.reduce((acc, person) => {
+      const companyName = person.companyName ?? 'Unknown Companies';
+      return { ...acc, [companyName]: (acc[companyName] || 0) + 1 };
+    }, {});
 
-    if (peopleByCompany) {
-      var index = 0;
-      let message = '';
-      for (var person in peopleByCompany) {
-        propertyNames[index] == 'undefined'
-          ? (message += 'Unreported companies(' + peopleByCompany[person] + ')')
-          : (message += `${propertyNames[index]}(${peopleByCompany[person]})`);
+    if (peopleByCompanyFunctional) {
+      const peopleByCompText = Object.entries(peopleByCompanyFunctional).reduce(
+        (acc, [company, number], index) => {
+          return acc + `${index ? `, ` : ``} ${company}: ${number}`;
+        },
+        ''
+      );
 
-        if (index < Object.keys(peopleByCompany).length - 1) {
-          message += ', ';
-        }
-        
-
-        index++;
-      }
-      setPeopleByCompanyMessage(message);
+      setPeopleByCompanyMessage(peopleByCompText);
     }
 
     // filter the people in the event from the people list
